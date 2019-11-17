@@ -341,37 +341,38 @@ func checkRow(schema sql.Schema, row sql.Row) error {
 
 // String implements the sql.Table inteface.
 func (t *Table) String() string {
-	p := sql.NewTreePrinter()
+	// p := sql.NewTreePrinter()
 
-	kind := ""
-	if len(t.columns) > 0 {
-		kind += "Projected "
-	}
-
-	// if len(t.filters) > 0 {
-	// 	kind += "Filtered "
+	// kind := ""
+	// if len(t.columns) > 0 {
+	// 	kind += "Projected "
 	// }
 
-	// if t.lookup != nil {
-	// 	kind += "Indexed"
+	// // if len(t.filters) > 0 {
+	// // 	kind += "Filtered "
+	// // }
+
+	// // if t.lookup != nil {
+	// // 	kind += "Indexed"
+	// // }
+
+	// if kind != "" {
+	// 	kind = ": " + kind
 	// }
 
-	if kind != "" {
-		kind = ": " + kind
-	}
-
-	_ = p.WriteNode("Table(%s)%s", t.name, kind)
-	var schema = make([]string, len(t.Schema()))
-	for i, col := range t.Schema() {
-		schema[i] = fmt.Sprintf(
-			"Column(%s, %s, nullable=%v)",
-			col.Name,
-			col.Type.Type().String(),
-			col.Nullable,
-		)
-	}
-	_ = p.WriteChildren(schema...)
-	return p.String()
+	// _ = p.WriteNode("Table(%s)%s", t.name, kind)
+	// var schema = make([]string, len(t.Schema()))
+	// for i, col := range t.Schema() {
+	// 	schema[i] = fmt.Sprintf(
+	// 		"Column(%s, %s, nullable=%v)",
+	// 		col.Name,
+	// 		col.Type.Type().String(),
+	// 		col.Nullable,
+	// 	)
+	// }
+	// _ = p.WriteChildren(schema...)
+	// return p.String()
+	return "DISATTIVATO"
 }
 
 // HandledFilters implements the sql.FilteredTable interface.

@@ -15,8 +15,8 @@ var ErrDatabaseNotFound = errors.NewKind("database not found: %s")
 
 // Catalog holds databases, tables and functions.
 type Catalog struct {
-	FunctionRegistry
-	//*IndexRegistry
+	// FunctionRegistry
+	// *IndexRegistry
 	*ProcessList
 	*MemoryManager
 
@@ -35,7 +35,7 @@ type (
 // NewCatalog returns a new empty Catalog.
 func NewCatalog() *Catalog {
 	return &Catalog{
-		FunctionRegistry: NewFunctionRegistry(),
+		// FunctionRegistry: NewFunctionRegistry(),
 		//IndexRegistry:    NewIndexRegistry(),
 		MemoryManager: NewMemoryManager(ProcessMemory),
 		ProcessList:   NewProcessList(),

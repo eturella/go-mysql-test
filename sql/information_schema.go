@@ -360,19 +360,20 @@ func (pit *informationSchemaPartitionIter) Close() error {
 }
 
 func printTable(name string, tableSchema Schema) string {
-	p := NewTreePrinter()
-	_ = p.WriteNode("Table(%s)", name)
-	var schema = make([]string, len(tableSchema))
-	for i, col := range tableSchema {
-		schema[i] = fmt.Sprintf(
-			"Column(%s, %s, nullable=%v)",
-			col.Name,
-			col.Type.Type().String(),
-			col.Nullable,
-		)
-	}
-	_ = p.WriteChildren(schema...)
-	return p.String()
+	// p := NewTreePrinter()
+	// _ = p.WriteNode("Table(%s)", name)
+	// var schema = make([]string, len(tableSchema))
+	// for i, col := range tableSchema {
+	// 	schema[i] = fmt.Sprintf(
+	// 		"Column(%s, %s, nullable=%v)",
+	// 		col.Name,
+	// 		col.Type.Type().String(),
+	// 		col.Nullable,
+	// 	)
+	// }
+	// _ = p.WriteChildren(schema...)
+	// return p.String()
+	return "DISATTIVATO"
 }
 
 func partitionKey(tableName string) []byte {

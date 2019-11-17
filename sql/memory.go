@@ -130,38 +130,38 @@ func (m *MemoryManager) HasAvailable() bool {
 // DisposeFunc is a function to completely erase a cache and remove it from the manager.
 type DisposeFunc func()
 
-// NewLRUCache returns an empty LRU cache and a function to dispose it when it's
-// no longer needed.
-func (m *MemoryManager) NewLRUCache(size uint) (KeyValueCache, DisposeFunc) {
-	c := newLRUCache(m, m.reporter, size)
-	pos := m.addCache(c)
-	return c, func() {
-		c.Dispose()
-		m.removeCache(pos)
-	}
-}
+// // NewLRUCache returns an empty LRU cache and a function to dispose it when it's
+// // no longer needed.
+// func (m *MemoryManager) NewLRUCache(size uint) (KeyValueCache, DisposeFunc) {
+// 	c := newLRUCache(m, m.reporter, size)
+// 	pos := m.addCache(c)
+// 	return c, func() {
+// 		c.Dispose()
+// 		m.removeCache(pos)
+// 	}
+// }
 
-// NewHistoryCache returns an empty history cache and a function to dispose it when it's
-// no longer needed.
-func (m *MemoryManager) NewHistoryCache() (KeyValueCache, DisposeFunc) {
-	c := newHistoryCache(m, m.reporter)
-	pos := m.addCache(c)
-	return c, func() {
-		c.Dispose()
-		m.removeCache(pos)
-	}
-}
+// // NewHistoryCache returns an empty history cache and a function to dispose it when it's
+// // no longer needed.
+// func (m *MemoryManager) NewHistoryCache() (KeyValueCache, DisposeFunc) {
+// 	c := newHistoryCache(m, m.reporter)
+// 	pos := m.addCache(c)
+// 	return c, func() {
+// 		c.Dispose()
+// 		m.removeCache(pos)
+// 	}
+// }
 
-// NewRowsCache returns an empty rows cache and a function to dispose it when it's
-// no longer needed.
-func (m *MemoryManager) NewRowsCache() (RowsCache, DisposeFunc) {
-	c := newRowsCache(m, m.reporter)
-	pos := m.addCache(c)
-	return c, func() {
-		c.Dispose()
-		m.removeCache(pos)
-	}
-}
+// // NewRowsCache returns an empty rows cache and a function to dispose it when it's
+// // no longer needed.
+// func (m *MemoryManager) NewRowsCache() (RowsCache, DisposeFunc) {
+// 	c := newRowsCache(m, m.reporter)
+// 	pos := m.addCache(c)
+// 	return c, func() {
+// 		c.Dispose()
+// 		m.removeCache(pos)
+// 	}
+// }
 
 func (m *MemoryManager) addCache(c Disposable) (pos uint64) {
 	m.mu.Lock()

@@ -3,9 +3,6 @@ package sql
 import (
 	"fmt"
 	"io"
-	"math"
-	"strconv"
-	"time"
 
 	"gopkg.in/src-d/go-errors.v1"
 )
@@ -264,49 +261,49 @@ type Lockable interface {
 	Unlock(ctx *Context, id uint32) error
 }
 
-// EvaluateCondition evaluates a condition, which is an expression whose value
-// will be coerced to boolean.
-func EvaluateCondition(ctx *Context, cond Expression, row Row) (bool, error) {
-	v, err := cond.Eval(ctx, row)
-	if err != nil {
-		return false, err
-	}
+// // EvaluateCondition evaluates a condition, which is an expression whose value
+// // will be coerced to boolean.
+// func EvaluateCondition(ctx *Context, cond Expression, row Row) (bool, error) {
+// 	v, err := cond.Eval(ctx, row)
+// 	if err != nil {
+// 		return false, err
+// 	}
 
-	switch b := v.(type) {
-	case bool:
-		return b, nil
-	case int:
-		return b != int(0), nil
-	case int64:
-		return b != int64(0), nil
-	case int32:
-		return b != int32(0), nil
-	case int16:
-		return b != int16(0), nil
-	case int8:
-		return b != int8(0), nil
-	case uint:
-		return b != uint(0), nil
-	case uint64:
-		return b != uint64(0), nil
-	case uint32:
-		return b != uint32(0), nil
-	case uint16:
-		return b != uint16(0), nil
-	case uint8:
-		return b != uint8(0), nil
-	case time.Duration:
-		return int64(b) != 0, nil
-	case time.Time:
-		return b.UnixNano() != 0, nil
-	case float64:
-		return int(math.Round(v.(float64))) != 0, nil
-	case float32:
-		return int(math.Round(float64(v.(float32)))) != 0, nil
-	case string:
-		parsed, err := strconv.ParseFloat(v.(string), 64)
-		return err == nil && int(parsed) != 0, nil
-	default:
-		return false, nil
-	}
-}
+// 	switch b := v.(type) {
+// 	case bool:
+// 		return b, nil
+// 	case int:
+// 		return b != int(0), nil
+// 	case int64:
+// 		return b != int64(0), nil
+// 	case int32:
+// 		return b != int32(0), nil
+// 	case int16:
+// 		return b != int16(0), nil
+// 	case int8:
+// 		return b != int8(0), nil
+// 	case uint:
+// 		return b != uint(0), nil
+// 	case uint64:
+// 		return b != uint64(0), nil
+// 	case uint32:
+// 		return b != uint32(0), nil
+// 	case uint16:
+// 		return b != uint16(0), nil
+// 	case uint8:
+// 		return b != uint8(0), nil
+// 	case time.Duration:
+// 		return int64(b) != 0, nil
+// 	case time.Time:
+// 		return b.UnixNano() != 0, nil
+// 	case float64:
+// 		return int(math.Round(v.(float64))) != 0, nil
+// 	case float32:
+// 		return int(math.Round(float64(v.(float32)))) != 0, nil
+// 	case string:
+// 		parsed, err := strconv.ParseFloat(v.(string), 64)
+// 		return err == nil && int(parsed) != 0, nil
+// 	default:
+// 		return false, nil
+// 	}
+// }

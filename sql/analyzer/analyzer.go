@@ -3,9 +3,9 @@ package analyzer
 import (
 	"os"
 
+	"github.com/eturella/go-mysql-test/sql"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
-	"github.com/eturella/go-mysql-test/sql"
 	"gopkg.in/src-d/go-errors.v1"
 )
 
@@ -40,94 +40,14 @@ func (ab *Builder) WithDebug() *Builder {
 	return ab
 }
 
-// WithParallelism sets the parallelism level on the analyzer.
-func (ab *Builder) WithParallelism(parallelism int) *Builder {
-	ab.parallelism = parallelism
-	return ab
-}
-
-// AddPreAnalyzeRule adds a new rule to the analyze before the standard analyzer rules.
-func (ab *Builder) AddPreAnalyzeRule(name string, fn RuleFunc) *Builder {
-	ab.preAnalyzeRules = append(ab.preAnalyzeRules, Rule{name, fn})
-
-	return ab
-}
-
-// AddPostAnalyzeRule adds a new rule to the analyzer after standard analyzer rules.
-func (ab *Builder) AddPostAnalyzeRule(name string, fn RuleFunc) *Builder {
-	ab.postAnalyzeRules = append(ab.postAnalyzeRules, Rule{name, fn})
-
-	return ab
-}
-
-// AddPreValidationRule adds a new rule to the analyzer before standard validation rules.
-func (ab *Builder) AddPreValidationRule(name string, fn RuleFunc) *Builder {
-	ab.preValidationRules = append(ab.preValidationRules, Rule{name, fn})
-
-	return ab
-}
-
-// AddPostValidationRule adds a new rule to the analyzer after standard validation rules.
-func (ab *Builder) AddPostValidationRule(name string, fn RuleFunc) *Builder {
-	ab.postValidationRules = append(ab.postValidationRules, Rule{name, fn})
-
-	return ab
-}
-
 // Build creates a new Analyzer using all previous data setted to the Builder
 func (ab *Builder) Build() *Analyzer {
 	_, debug := os.LookupEnv(debugAnalyzerKey)
-	var batches = []*Batch{
-		&Batch{
-			Desc:       "pre-analyzer rules",
-			Iterations: maxAnalysisIterations,
-			Rules:      ab.preAnalyzeRules,
-		},
-		&Batch{
-			Desc:       "once execution rule before default",
-			Iterations: 1,
-			Rules:      OnceBeforeDefault,
-		},
-		&Batch{
-			Desc:       "analyzer rules",
-			Iterations: maxAnalysisIterations,
-			Rules:      DefaultRules,
-		},
-		&Batch{
-			Desc:       "once execution rules after default",
-			Iterations: 1,
-			Rules:      OnceAfterDefault,
-		},
-		&Batch{
-			Desc:       "post-analyzer rules",
-			Iterations: maxAnalysisIterations,
-			Rules:      ab.postAnalyzeRules,
-		},
-		&Batch{
-			Desc:       "pre-validation rules",
-			Iterations: 1,
-			Rules:      ab.preValidationRules,
-		},
-		&Batch{
-			Desc:       "validation rules",
-			Iterations: 1,
-			Rules:      DefaultValidationRules,
-		},
-		&Batch{
-			Desc:       "post-validation rules",
-			Iterations: 1,
-			Rules:      ab.postValidationRules,
-		},
-		&Batch{
-			Desc:       "after-all rules",
-			Iterations: 1,
-			Rules:      OnceAfterAll,
-		},
-	}
+	// var batches = []*Batch{}
 
 	return &Analyzer{
-		Debug:       debug || ab.debug,
-		Batches:     batches,
+		Debug: debug || ab.debug,
+		// Batches:     batches,
 		Catalog:     ab.catalog,
 		Parallelism: ab.parallelism,
 	}
@@ -167,16 +87,8 @@ func (a *Analyzer) Analyze(ctx *sql.Context, n sql.Node) (sql.Node, error) {
 	prev := n
 	var err error
 	a.Log("starting analysis of node of type: %T", n)
-	for _, batch := range a.Batches {
-		prev, err = batch.Eval(ctx, a, prev)
-		if ErrMaxAnalysisIters.Is(err) {
-			a.Log(err.Error())
-			continue
-		}
-		if err != nil {
-			return nil, err
-		}
-	}
+
+	prev, err = resolveTables(ctx, a, n)
 
 	defer func() {
 		if prev != nil {
@@ -186,8 +98,4 @@ func (a *Analyzer) Analyze(ctx *sql.Context, n sql.Node) (sql.Node, error) {
 	}()
 
 	return prev, err
-}
-
-type equaler interface {
-	Equal(sql.Node) bool
 }

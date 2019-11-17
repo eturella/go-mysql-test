@@ -12,6 +12,8 @@ import (
 	"github.com/eturella/go-mysql-test/sql"
 )
 
+var serverInstance server.Server
+
 // Example of how to implement a MySQL server based on a Engine:
 //
 // ```
@@ -42,11 +44,15 @@ func main() {
 	}
 
 	logrus.Debug("Avvio del server...")
-	s, err := server.NewDefaultServer(config, engine)
+	serverInstance, err := server.NewDefaultServer(config, engine)
 	if err != nil {
 		panic(err)
 	}
-	s.Start()
+	serverInstance.Start()
+}
+
+func stop() {
+	serverInstance.Close()
 }
 
 func createTestDatabase() *memory.Database {
@@ -65,9 +71,9 @@ func createTestDatabase() *memory.Database {
 
 	db.AddTable(tableName, table)
 	ctx := sql.NewEmptyContext()
-	table.Insert(ctx, sql.NewRow("John Doe", "john@doe.com", []string{"555-555-555"}, time.Now()))
-	table.Insert(ctx, sql.NewRow("John Doe", "johnalt@doe.com", []string{}, time.Now()))
-	table.Insert(ctx, sql.NewRow("Jane Doe", "jane@doe.com", []string{}, time.Now()))
-	table.Insert(ctx, sql.NewRow("Evil Bob", "evilbob@gmail.com", []string{"555-666-555", "666-666-666"}, time.Now()))
+	table.Insert(ctx, sql.NewRow("Test1 Doe", "john@doe.com", []string{"555-555-555"}, time.Now()))
+	table.Insert(ctx, sql.NewRow("Test2 Doe", "johnalt@doe.com", []string{}, time.Now()))
+	table.Insert(ctx, sql.NewRow("Test3 Doe", "jane@doe.com", []string{}, time.Now()))
+	table.Insert(ctx, sql.NewRow("Test4 Bob", "evilbob@gmail.com", []string{"555-666-555", "666-666-666"}, time.Now()))
 	return db
 }

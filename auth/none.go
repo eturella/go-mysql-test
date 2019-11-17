@@ -2,7 +2,6 @@ package auth
 
 import (
 	"github.com/eturella/go-mysql-test/sql"
-
 	"vitess.io/vitess/go/mysql"
 )
 
@@ -14,7 +13,7 @@ func (n *None) Mysql() mysql.AuthServer {
 	return new(mysql.AuthServerNone)
 }
 
-// Allowed ??????
+// Allowed implements Auth interface.
 func (n *None) Allowed(ctx *sql.Context, permission Permission) error {
 	return nil
 }
