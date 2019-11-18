@@ -6,46 +6,33 @@ import (
 	"github.com/eturella/go-mysql-test/sql"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/src-d/go-errors.v1"
 )
 
-const debugAnalyzerKey = "DEBUG_ANALYZER"
-
-// const maxAnalysisIterations = 1000
-
-// ErrMaxAnalysisIters is thrown when the analysis iterations are exceeded
-var ErrMaxAnalysisIters = errors.NewKind("exceeded max analysis iterations (%d)")
-
-// Builder provides an easy way to generate Analyzer with custom rules and options.
-type Builder struct {
-	// preAnalyzeRules     []Rule
-	// postAnalyzeRules    []Rule
-	// preValidationRules  []Rule
-	// postValidationRules []Rule
+// ExternalAnalyzerBuilder provides an easy way to generate Analyzer with custom rules and options.
+type ExternalAnalyzerBuilder struct {
 	catalog     *sql.Catalog
 	debug       bool
 	parallelism int
 }
 
-// NewBuilder creates a new Builder from a specific catalog.
+// NewExternalAnalyzerBuilder creates a new ExternalAnalyzerBuilder from a specific catalog.
 // This builder allow us add custom Rules and modify some internal properties.
-func NewBuilder(c *sql.Catalog) *Builder {
-	return &Builder{catalog: c}
+func NewExternalAnalyzerBuilder(c *sql.Catalog) *ExternalAnalyzerBuilder {
+	return &ExternalAnalyzerBuilder{catalog: c}
 }
 
 // WithDebug activates debug on the Analyzer.
-func (ab *Builder) WithDebug() *Builder {
+func (ab *ExternalAnalyzerBuilder) WithDebug() *ExternalAnalyzerBuilder {
 	ab.debug = true
-
 	return ab
 }
 
 // Build creates a new Analyzer using all previous data setted to the Builder
-func (ab *Builder) Build() *Analyzer {
+func (ab *ExternalAnalyzerBuilder) Build() *ExternalAnalyzer {
 	_, debug := os.LookupEnv(debugAnalyzerKey)
 	// var batches = []*Batch{}
 
-	return &Analyzer{
+	return &ExternalAnalyzer{
 		Debug: debug || ab.debug,
 		// Batches:     batches,
 		Catalog:     ab.catalog,
@@ -53,9 +40,9 @@ func (ab *Builder) Build() *Analyzer {
 	}
 }
 
-// Analyzer analyzes nodes of the execution plan and applies rules and validations
+// ExternalAnalyzer analyzes nodes of the execution plan and applies rules and validations
 // to them.
-type Analyzer struct {
+type ExternalAnalyzer struct {
 	Debug       bool
 	Parallelism int
 	// Batches of Rules to apply.
@@ -64,22 +51,22 @@ type Analyzer struct {
 	Catalog *sql.Catalog
 }
 
-// NewDefault creates a default Analyzer instance with all default Rules and configuration.
+// NewExternalDefault creates a default Analyzer instance with all default Rules and configuration.
 // To add custom rules, the easiest way is use the Builder.
-func NewDefault(c *sql.Catalog) *Analyzer {
-	return NewBuilder(c).Build()
+func NewExternalDefault(c *sql.Catalog) *ExternalAnalyzer {
+	return NewExternalAnalyzerBuilder(c).Build()
 }
 
 // Log prints an INFO message to stdout with the given message and args
 // if the analyzer is in debug mode.
-func (a *Analyzer) Log(msg string, args ...interface{}) {
+func (a *ExternalAnalyzer) Log(msg string, args ...interface{}) {
 	if a != nil && a.Debug {
 		logrus.Infof(msg, args...)
 	}
 }
 
 // Analyze the node and all its children.
-func (a *Analyzer) Analyze(ctx *sql.Context, n sql.Node) (sql.Node, error) {
+func (a *ExternalAnalyzer) Analyze(ctx *sql.Context, n sql.Node) (sql.Node, error) {
 	span, ctx := ctx.Span("analyze", opentracing.Tags{
 		"plan": n.String(),
 	})
@@ -88,7 +75,7 @@ func (a *Analyzer) Analyze(ctx *sql.Context, n sql.Node) (sql.Node, error) {
 	var err error
 	a.Log("starting analysis of node of type: %T", n)
 
-	prev, err = resolveTables(ctx, a, n)
+	prev, err = resolveExternalTables(ctx, a, n)
 
 	defer func() {
 		if prev != nil {

@@ -3,13 +3,16 @@ module github.com/eturella/go-mysql-test
 require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/VividCortex/gohistogram v1.0.0 // indirect
+	github.com/bisegni/go-c-interface-test v0.0.0-20191118103430-2b53f98dbf05
 	github.com/go-kit/kit v0.8.0
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.3.0 // indirect
+	github.com/google/uuid v1.1.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.3
+	github.com/lithammer/shortuuid v3.0.0+incompatible // indirect
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 	github.com/opentracing/opentracing-go v1.0.2
@@ -26,3 +29,5 @@ require (
 	gopkg.in/yaml.v2 v2.2.2
 	vitess.io/vitess v3.0.0-rc.3.0.20190602171040-12bfde34629c+incompatible
 )
+
+go 1.13
