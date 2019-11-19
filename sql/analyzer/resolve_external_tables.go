@@ -4,7 +4,7 @@ import (
 	"github.com/eturella/go-mysql-test/sql"
 	"github.com/eturella/go-mysql-test/sql/plan"
 
-	extdb "github.com/bisegni/go-c-interface-test"
+	extdb "github.com/bisegni/go-c-interface-test/pkg"
 )
 
 // const dualTableName = "dual"

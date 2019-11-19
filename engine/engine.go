@@ -7,7 +7,6 @@ import (
 	"github.com/eturella/go-mysql-test/auth"
 	"github.com/eturella/go-mysql-test/sql"
 	"github.com/eturella/go-mysql-test/sql/analyzer"
-	"github.com/eturella/go-mysql-test/sql/parse"
 	"github.com/go-kit/kit/metrics/discard"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
@@ -108,39 +107,40 @@ func (e *Engine) Query(
 	finish := observeQuery(ctx, query)
 	defer finish(err)
 
-	parsed, err = parse.Parse(ctx, query)
-	fmt.Printf("%+v\n", parsed)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var perm = auth.ReadPerm
-	var typ = sql.QueryProcess
-	// switch parsed.(type) {
-	// case *plan.CreateIndex:
-	// 	typ = sql.CreateIndexProcess
-	// 	perm = auth.ReadPerm | auth.WritePerm
-	// case *plan.InsertInto, *plan.DeleteFrom, *plan.Update, *plan.DropIndex, *plan.UnlockTables, *plan.LockTables:
-	// 	perm = auth.ReadPerm | auth.WritePerm
+	// parsed, err = parse.Parse(ctx, query)
+	// fmt.Printf("%+v\n", parsed)
+	// if err != nil {
+	// 	return nil, nil, err
 	// }
 
-	err = e.Auth.Allowed(ctx, perm)
-	if err != nil {
-		return nil, nil, err
-	}
+	// var perm = auth.ReadPerm
+	// var typ = sql.QueryProcess
+	// // switch parsed.(type) {
+	// // case *plan.CreateIndex:
+	// // 	typ = sql.CreateIndexProcess
+	// // 	perm = auth.ReadPerm | auth.WritePerm
+	// // case *plan.InsertInto, *plan.DeleteFrom, *plan.Update, *plan.DropIndex, *plan.UnlockTables, *plan.LockTables:
+	// // 	perm = auth.ReadPerm | auth.WritePerm
+	// // }
 
-	ctx, err = e.Catalog.AddProcess(ctx, typ, query)
-	defer func() {
-		if err != nil && ctx != nil {
-			e.Catalog.Done(ctx.Pid())
-		}
-	}()
+	// err = e.Auth.Allowed(ctx, perm)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
-	if err != nil {
-		return nil, nil, err
-	}
+	// ctx, err = e.Catalog.AddProcess(ctx, typ, query)
+	// defer func() {
+	// 	if err != nil && ctx != nil {
+	// 		e.Catalog.Done(ctx.Pid())
+	// 	}
+	// }()
 
-	analyzed, err = e.Analyzer.Analyze(ctx, parsed)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
+
+	//analyzed, err = e.Analyzer.Analyze(ctx, parsed)
+	analyzed, err = bisegniadapter.Execute(ctx, query)
 	fmt.Printf("%+v\n", analyzed)
 	if err != nil {
 		return nil, nil, err

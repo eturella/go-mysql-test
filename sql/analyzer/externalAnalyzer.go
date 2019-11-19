@@ -1,8 +1,6 @@
 package analyzer
 
 import (
-	"os"
-
 	"github.com/eturella/go-mysql-test/sql"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
@@ -29,11 +27,11 @@ func (ab *ExternalAnalyzerBuilder) WithDebug() *ExternalAnalyzerBuilder {
 
 // Build creates a new Analyzer using all previous data setted to the Builder
 func (ab *ExternalAnalyzerBuilder) Build() *ExternalAnalyzer {
-	_, debug := os.LookupEnv(debugAnalyzerKey)
+	// _, debug := os.LookupEnv(debugAnalyzerKey)
 	// var batches = []*Batch{}
 
 	return &ExternalAnalyzer{
-		Debug: debug || ab.debug,
+		// Debug: debug || ab.debug,
 		// Batches:     batches,
 		Catalog:     ab.catalog,
 		Parallelism: ab.parallelism,
@@ -46,7 +44,7 @@ type ExternalAnalyzer struct {
 	Debug       bool
 	Parallelism int
 	// Batches of Rules to apply.
-	Batches []*Batch
+	// Batches []*Batch
 	// Catalog of databases and registered functions.
 	Catalog *sql.Catalog
 }

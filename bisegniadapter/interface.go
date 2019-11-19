@@ -1,141 +1,65 @@
-package memory
+package bisegniadapter
 
-// import (
-// 	"bytes"
-// 	"encoding/gob"
-// 	"fmt"
-// 	"io"
-// 	"strconv"
+import (
+	"github.com/bisegni/go-c-interface-test/pkg"
+	"github.com/eturella/go-mysql-test/sql"
+)
 
-// 	"github.com/eturella/go-mysql-test/sql"
-// 	errors "gopkg.in/src-d/go-errors.v1"
-// )
+// ExternalTable represents an in-memory database table.
+type ExternalTable struct {
+	name     string
+	executor pkg.QueryExecution
+}
 
-// // Table represents an in-memory database table.
-// type Table struct {
-// 	name       string
-// 	schema     sql.Schema
-// 	partitions map[string][]sql.Row
-// 	keys       [][]byte
+// NewExternalTable creates a new Table with the given name and schema.
+func NewExternalTable(name string, exec pkg.QueryExecution) *ExternalTable {
+	return &ExternalTable{
+		name:     name,
+		executor: exec,
+	}
+}
 
-// 	insert int
+// Name implements the sql.Table interface.
+func (t *ExternalTable) Name() string {
+	return t.name
+}
 
-// 	//filters    []sql.Expression
-// 	projection []string
-// 	columns    []int
-// 	//lookup     sql.IndexLookup
-// }
+// Schema implements the sql.Table interface.
+func (t *ExternalTable) Schema() (sql.Schema, error) {
+	names, types, err := t.executor.GetSchema()
+	if err != nil {
+		return nil, err
+	}
+	tabName := t.name
+	cols := sql.Schema{}
+	for index := 0; index < t.executor.ColCount; index++ {
+		var t sql.Type
+		switch types[index].Name() {
+		case "bool":
+			t = sql.Boolean
+		default:
+			t = sql.Text
+		}
+		c := sql.Column{
+			Name:       names[index],
+			Type:       t,
+			Default:    "",
+			Nullable:   true,
+			Source:     tabName,
+			PrimaryKey: false,
+		}
+		cols[index] = &c
+	}
+	return cols, nil
+}
 
-// var _ sql.Table = (*Table)(nil)
-// var _ sql.Inserter = (*Table)(nil)
+// Next ?????
+func (t *ExternalTable) Next() (bool, error) {
+	return t.executor.Next(), nil
+}
 
-// // var _ sql.FilteredTable = (*Table)(nil)
-// var _ sql.ProjectedTable = (*Table)(nil)
-
-// // var _ sql.IndexableTable = (*Table)(nil)
-
-// // NewTable creates a new Table with the given name and schema.
-// func NewTable(name string, schema sql.Schema) *Table {
-// 	return NewPartitionedTable(name, schema, 0)
-// }
-
-// // NewPartitionedTable creates a new Table with the given name, schema and number of partitions.
-// func NewPartitionedTable(name string, schema sql.Schema, numPartitions int) *Table {
-// 	var keys [][]byte
-// 	var partitions = map[string][]sql.Row{}
-
-// 	if numPartitions < 1 {
-// 		numPartitions = 1
-// 	}
-
-// 	for i := 0; i < numPartitions; i++ {
-// 		key := strconv.Itoa(i)
-// 		keys = append(keys, []byte(key))
-// 		partitions[key] = []sql.Row{}
-// 	}
-
-// 	return &Table{
-// 		name:       name,
-// 		schema:     schema,
-// 		partitions: partitions,
-// 		keys:       keys,
-// 	}
-// }
-
-// // Name implements the sql.Table interface.
-// func (t *Table) Name() string {
-// 	return t.name
-// }
-
-// // Schema implements the sql.Table interface.
-// func (t *Table) Schema() sql.Schema {
-// 	return t.schema
-// }
-
-// // Partitions implements the sql.Table interface.
-// func (t *Table) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
-// 	var keys [][]byte
-// 	for _, k := range t.keys {
-// 		if rows, ok := t.partitions[string(k)]; ok && len(rows) > 0 {
-// 			keys = append(keys, k)
-// 		}
-// 	}
-// 	return &partitionIter{keys: keys}, nil
-// }
-
-// // PartitionCount implements the sql.PartitionCounter interface.
-// func (t *Table) PartitionCount(ctx *sql.Context) (int64, error) {
-// 	return int64(len(t.partitions)), nil
-// }
-
-// // PartitionRows implements the sql.PartitionRows interface.
-// func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
-// 	rows, ok := t.partitions[string(partition.Key())]
-// 	if !ok {
-// 		return nil, fmt.Errorf(
-// 			"partition not found: %q", partition.Key(),
-// 		)
-// 	}
-
-// 	// var values sql.IndexValueIter
-// 	// if t.lookup != nil {
-// 	// 	var err error
-// 	// 	values, err = t.lookup.Values(partition)
-// 	// 	if err != nil {
-// 	// 		return nil, err
-// 	// 	}
-// 	// }
-
-// 	return &tableIter{
-// 		rows:    rows,
-// 		columns: t.columns,
-// 		// filters:     t.filters,
-// 		// indexValues: values,
-// 	}, nil
-// }
-
-// type partition struct {
-// 	key []byte
-// }
-
-// func (p *partition) Key() []byte { return p.key }
-
-// type partitionIter struct {
-// 	keys [][]byte
-// 	pos  int
-// }
-
-// func (p *partitionIter) Next() (sql.Partition, error) {
-// 	if p.pos >= len(p.keys) {
-// 		return nil, io.EOF
-// 	}
-
-// 	key := p.keys[p.pos]
-// 	p.pos++
-// 	return &partition{key}, nil
-// }
-
-// func (p *partitionIter) Close() error { return nil }
+// Close ????
+func (p *ExternalTable) Close() error { return nil }
 
 // type tableIter struct {
 // 	columns []int
