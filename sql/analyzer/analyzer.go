@@ -53,16 +53,16 @@ package analyzer
 // 	}
 // }
 
-// // Analyzer analyzes nodes of the execution plan and applies rules and validations
-// // to them.
-// type Analyzer struct {
-// 	Debug       bool
-// 	Parallelism int
-// 	// Batches of Rules to apply.
-// 	Batches []*Batch
-// 	// Catalog of databases and registered functions.
-// 	Catalog *sql.Catalog
-// }
+// Analyzer analyzes nodes of the execution plan and applies rules and validations
+// to them.
+type Analyzer struct {
+	Debug       bool
+	Parallelism int
+	// // Batches of Rules to apply.
+	// Batches []*Batch
+	// // Catalog of databases and registered functions.
+	// Catalog *sql.Catalog
+}
 
 // // NewDefault creates a default Analyzer instance with all default Rules and configuration.
 // // To add custom rules, the easiest way is use the Builder.

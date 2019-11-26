@@ -101,9 +101,9 @@ func (h *Handler) ConnectionClosed(c *mysql.Conn) {
 	// If connection was closed, kill only its associated queries.
 	h.e.Catalog.ProcessList.KillOnlyQueries(c.ConnectionID)
 
-	if err := h.e.Catalog.UnlockTables(nil, c.ConnectionID); err != nil {
-		logrus.Errorf("unable to unlock tables on session close: %s", err)
-	}
+	// if err := h.e.Catalog.UnlockTables(nil, c.ConnectionID); err != nil {
+	// 	logrus.Errorf("unable to unlock tables on session close: %s", err)
+	// }
 
 	logrus.Infof("ConnectionClosed: client %v", c.ConnectionID)
 }

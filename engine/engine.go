@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	pkg "github.com/bisegni/go-c-interface-test/query"
 	"github.com/eturella/go-mysql-test/auth"
+	"github.com/eturella/go-mysql-test/bisegniadapter"
 	"github.com/eturella/go-mysql-test/sql"
 	"github.com/eturella/go-mysql-test/sql/analyzer"
 	"github.com/go-kit/kit/metrics/discard"
@@ -88,7 +90,8 @@ func New(c *sql.Catalog, a *analyzer.Analyzer, cfg *Config) *Engine {
 // NewDefault creates a new default Engine.
 func NewDefault() *Engine {
 	c := sql.NewCatalog()
-	a := analyzer.NewDefault(c)
+	// a := analyzer.NewDefault(c)
+	a := &analyzer.Analyzer{Debug: true, Parallelism: 0}
 
 	return New(c, a, nil)
 }
@@ -99,9 +102,10 @@ func (e *Engine) Query(
 	query string,
 ) (sql.Schema, sql.RowIter, error) {
 	var (
-		parsed, analyzed sql.Node
-		iter             sql.RowIter
-		err              error
+		//parsed,
+		analyzed sql.Node
+		iter     sql.RowIter
+		err      error
 	)
 
 	finish := observeQuery(ctx, query)
@@ -140,7 +144,20 @@ func (e *Engine) Query(
 	// }
 
 	//analyzed, err = e.Analyzer.Analyze(ctx, parsed)
-	analyzed, err = bisegniadapter.Execute(ctx, query)
+	qe := pkg.NewFileExecutorWithRGA("test/tmp")
+
+	//execute query
+	err = qe.Execute()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	_, err = qe.Wait()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	analyzed, err = bisegniadapter.NewExternalTable(query, qe)
 	fmt.Printf("%+v\n", analyzed)
 	if err != nil {
 		return nil, nil, err

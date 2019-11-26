@@ -1,22 +1,25 @@
 package bisegniadapter
 
 import (
-	"github.com/bisegni/go-c-interface-test/pkg"
+	"io"
+	"reflect"
+
+	pkg "github.com/bisegni/go-c-interface-test/query"
 	"github.com/eturella/go-mysql-test/sql"
 )
 
 // ExternalTable represents an in-memory database table.
 type ExternalTable struct {
 	name     string
-	executor pkg.QueryExecution
+	executor pkg.Executor
 }
 
 // NewExternalTable creates a new Table with the given name and schema.
-func NewExternalTable(name string, exec pkg.QueryExecution) *ExternalTable {
+func NewExternalTable(name string, exec pkg.Executor) (*ExternalTable, error) {
 	return &ExternalTable{
 		name:     name,
 		executor: exec,
-	}
+	}, nil
 }
 
 // Name implements the sql.Table interface.
@@ -25,41 +28,89 @@ func (t *ExternalTable) Name() string {
 }
 
 // Schema implements the sql.Table interface.
-func (t *ExternalTable) Schema() (sql.Schema, error) {
-	names, types, err := t.executor.GetSchema()
+func (t *ExternalTable) Schema() sql.Schema {
+	tmo, err := t.executor.GetSchema()
 	if err != nil {
-		return nil, err
+		return nil
 	}
+	colDescrs := *tmo
 	tabName := t.name
-	cols := sql.Schema{}
-	for index := 0; index < t.executor.ColCount; index++ {
+	cols := make([]*sql.Column, len(colDescrs))
+	for index := 0; index < len(colDescrs); index++ {
 		var t sql.Type
-		switch types[index].Name() {
-		case "bool":
+		switch colDescrs[index].Kind {
+		case reflect.Bool:
 			t = sql.Boolean
+		case reflect.Int32:
+			t = sql.Int32
+		case reflect.Int64:
+			t = sql.Int64
+		case reflect.Float32:
+			t = sql.Float32
+		case reflect.Float64:
+			t = sql.Float64
 		default:
 			t = sql.Text
 		}
 		c := sql.Column{
-			Name:       names[index],
+			Name:       colDescrs[index].Name,
 			Type:       t,
-			Default:    "",
+			Default:    0,
 			Nullable:   true,
 			Source:     tabName,
-			PrimaryKey: false,
+			PrimaryKey: index == 0,
 		}
 		cols[index] = &c
 	}
-	return cols, nil
+	return cols
 }
 
+// // Next ?????
+// func (t *ExternalTable) Next() (bool, error) {
+// 	return t.executor.Next(), nil
+// }
+
 // Next ?????
-func (t *ExternalTable) Next() (bool, error) {
-	return t.executor.Next(), nil
+func (t *ExternalTable) Next() (sql.Row, error) {
+
+	// if t.executor.Next() {
+	// 	s, e := t.executor.ScanEntireRow()
+	// 	if e != nil {
+	// 		return nil, e
+	// 	}
+	// 	return s, nil
+	// }
+	s, e := t.executor.NextRow()
+	if e != nil {
+		return nil, e
+	}
+	if len(*s) == 0 {
+		return nil, io.EOF
+	}
+	return *s, nil
 }
 
 // Close ????
-func (p *ExternalTable) Close() error { return nil }
+func (t *ExternalTable) Close() error { return nil }
+
+// String ...
+func (t *ExternalTable) String() string { return t.name }
+
+// Resolved ...
+func (t *ExternalTable) Resolved() bool { return true }
+
+// func (nothing) Schema() sql.Schema   { return nil }
+//func (nothing) Children() []sql.Node { return nil }
+
+// RowIter iterate
+func (t *ExternalTable) RowIter(*sql.Context) (sql.RowIter, error) {
+	return t, nil
+}
+
+// // WithChildren implements the Node interface.
+// func (t *ExternalTable) WithChildren(children ...sql.Node) (sql.Node, error) {
+// 	return t, nil
+// }
 
 // type tableIter struct {
 // 	columns []int
