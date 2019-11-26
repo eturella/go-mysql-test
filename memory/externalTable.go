@@ -3,139 +3,55 @@ package memory
 // import (
 // 	"bytes"
 // 	"encoding/gob"
-// 	"fmt"
 // 	"io"
-// 	"strconv"
 
 // 	"github.com/eturella/go-mysql-test/sql"
 // 	errors "gopkg.in/src-d/go-errors.v1"
 // )
 
-// // Table represents an in-memory database table.
-// type Table struct {
-// 	name       string
-// 	schema     sql.Schema
-// 	partitions map[string][]sql.Row
-// 	keys       [][]byte
-
+// // ExternalTable represents an in-memory database table.
+// type ExternalTable struct {
+// 	name   string
+// 	schema sql.Schema
 // 	insert int
 
-// 	//filters    []sql.Expression
 // 	projection []string
 // 	columns    []int
-// 	//lookup     sql.IndexLookup
 // }
 
-// var _ sql.Table = (*Table)(nil)
-// var _ sql.Inserter = (*Table)(nil)
+// // var _ sql.Table = (*Table)(nil)
+// // var _ sql.Inserter = (*Table)(nil)
 
-// // var _ sql.FilteredTable = (*Table)(nil)
-// var _ sql.ProjectedTable = (*Table)(nil)
+// // // var _ sql.FilteredTable = (*Table)(nil)
+// // var _ sql.ProjectedTable = (*Table)(nil)
 
-// // var _ sql.IndexableTable = (*Table)(nil)
+// // // var _ sql.IndexableTable = (*Table)(nil)
 
-// // NewTable creates a new Table with the given name and schema.
-// func NewTable(name string, schema sql.Schema) *Table {
-// 	return NewPartitionedTable(name, schema, 0)
-// }
-
-// // NewPartitionedTable creates a new Table with the given name, schema and number of partitions.
-// func NewPartitionedTable(name string, schema sql.Schema, numPartitions int) *Table {
-// 	var keys [][]byte
-// 	var partitions = map[string][]sql.Row{}
-
-// 	if numPartitions < 1 {
-// 		numPartitions = 1
-// 	}
-
-// 	for i := 0; i < numPartitions; i++ {
-// 		key := strconv.Itoa(i)
-// 		keys = append(keys, []byte(key))
-// 		partitions[key] = []sql.Row{}
-// 	}
-
-// 	return &Table{
-// 		name:       name,
-// 		schema:     schema,
-// 		partitions: partitions,
-// 		keys:       keys,
+// // NewExternalTable creates a new Table with the given name and schema.
+// func NewExternalTable(name string, schema sql.Schema) *ExternalTable {
+// 	return &ExternalTable{
+// 		name:   name,
+// 		schema: schema,
 // 	}
 // }
 
 // // Name implements the sql.Table interface.
-// func (t *Table) Name() string {
+// func (t *ExternalTable) Name() string {
 // 	return t.name
 // }
 
 // // Schema implements the sql.Table interface.
-// func (t *Table) Schema() sql.Schema {
+// func (t *ExternalTable) Schema() sql.Schema {
 // 	return t.schema
 // }
 
-// // Partitions implements the sql.Table interface.
-// func (t *Table) Partitions(ctx *sql.Context) (sql.PartitionIter, error) {
-// 	var keys [][]byte
-// 	for _, k := range t.keys {
-// 		if rows, ok := t.partitions[string(k)]; ok && len(rows) > 0 {
-// 			keys = append(keys, k)
-// 		}
-// 	}
-// 	return &partitionIter{keys: keys}, nil
+// // Next mmmm
+// func (t *ExternalTable) Next() (*ExternalTable, error) {
+// 	return t., nil
 // }
 
-// // PartitionCount implements the sql.PartitionCounter interface.
-// func (t *Table) PartitionCount(ctx *sql.Context) (int64, error) {
-// 	return int64(len(t.partitions)), nil
-// }
-
-// // PartitionRows implements the sql.PartitionRows interface.
-// func (t *Table) PartitionRows(ctx *sql.Context, partition sql.Partition) (sql.RowIter, error) {
-// 	rows, ok := t.partitions[string(partition.Key())]
-// 	if !ok {
-// 		return nil, fmt.Errorf(
-// 			"partition not found: %q", partition.Key(),
-// 		)
-// 	}
-
-// 	// var values sql.IndexValueIter
-// 	// if t.lookup != nil {
-// 	// 	var err error
-// 	// 	values, err = t.lookup.Values(partition)
-// 	// 	if err != nil {
-// 	// 		return nil, err
-// 	// 	}
-// 	// }
-
-// 	return &tableIter{
-// 		rows:    rows,
-// 		columns: t.columns,
-// 		// filters:     t.filters,
-// 		// indexValues: values,
-// 	}, nil
-// }
-
-// type partition struct {
-// 	key []byte
-// }
-
-// func (p *partition) Key() []byte { return p.key }
-
-// type partitionIter struct {
-// 	keys [][]byte
-// 	pos  int
-// }
-
-// func (p *partitionIter) Next() (sql.Partition, error) {
-// 	if p.pos >= len(p.keys) {
-// 		return nil, io.EOF
-// 	}
-
-// 	key := p.keys[p.pos]
-// 	p.pos++
-// 	return &partition{key}, nil
-// }
-
-// func (p *partitionIter) Close() error { return nil }
+// // Close ....
+// func (p *ExternalTable) Close() error { return nil }
 
 // type tableIter struct {
 // 	columns []int
@@ -244,7 +160,7 @@ package memory
 // }
 
 // // Insert a new row into the table.
-// func (t *Table) Insert(ctx *sql.Context, row sql.Row) error {
+// func (t *ExternalTable) Insert(ctx *sql.Context, row sql.Row) error {
 // 	if err := checkRow(t.schema, row); err != nil {
 // 		return err
 // 	}
@@ -260,7 +176,7 @@ package memory
 // }
 
 // // Delete the given row from the table.
-// func (t *Table) Delete(ctx *sql.Context, row sql.Row) error {
+// func (t *ExternalTable) Delete(ctx *sql.Context, row sql.Row) error {
 // 	if err := checkRow(t.schema, row); err != nil {
 // 		return err
 // 	}
@@ -293,7 +209,7 @@ package memory
 // }
 
 // // Update ???
-// func (t *Table) Update(ctx *sql.Context, oldRow sql.Row, newRow sql.Row) error {
+// func (t *ExternalTable) Update(ctx *sql.Context, oldRow sql.Row, newRow sql.Row) error {
 // 	if err := checkRow(t.schema, oldRow); err != nil {
 // 		return err
 // 	}
@@ -340,7 +256,7 @@ package memory
 // }
 
 // // String implements the sql.Table inteface.
-// func (t *Table) String() string {
+// func (t *ExternalTable) String() string {
 // 	// p := sql.NewTreePrinter()
 
 // 	// kind := ""
@@ -375,80 +291,80 @@ package memory
 // 	return "DISATTIVATO"
 // }
 
-// // HandledFilters implements the sql.FilteredTable interface.
-// func (t *Table) HandledFilters(filters []sql.Expression) []sql.Expression {
-// 	var handled []sql.Expression
-// 	for _, f := range filters {
-// 		var hasOtherFields bool
-// 		// expression.Inspect(f, func(e sql.Expression) bool {
-// 		// 	if e, ok := e.(*expression.GetField); ok {
-// 		// 		if e.Table() != t.name || !t.schema.Contains(e.Name(), t.name) {
-// 		// 			hasOtherFields = true
-// 		// 			return false
-// 		// 		}
-// 		// 	}
-// 		// 	return true
-// 		// })
+// // // HandledFilters implements the sql.FilteredTable interface.
+// // func (t *ExternalTable) HandledFilters(filters []sql.Expression) []sql.Expression {
+// // 	var handled []sql.Expression
+// // 	for _, f := range filters {
+// // 		var hasOtherFields bool
+// // 		// expression.Inspect(f, func(e sql.Expression) bool {
+// // 		// 	if e, ok := e.(*expression.GetField); ok {
+// // 		// 		if e.Table() != t.name || !t.schema.Contains(e.Name(), t.name) {
+// // 		// 			hasOtherFields = true
+// // 		// 			return false
+// // 		// 		}
+// // 		// 	}
+// // 		// 	return true
+// // 		// })
 
-// 		if !hasOtherFields {
-// 			handled = append(handled, f)
-// 		}
-// 	}
+// // 		if !hasOtherFields {
+// // 			handled = append(handled, f)
+// // 		}
+// // 	}
 
-// 	return handled
-// }
+// // 	return handled
+// // }
 
-// // WithFilters implements the sql.FilteredTable interface.
-// func (t *Table) WithFilters(filters []sql.Expression) sql.Table {
-// 	if len(filters) == 0 {
-// 		return t
-// 	}
+// // // WithFilters implements the sql.FilteredTable interface.
+// // func (t *Table) WithFilters(filters []sql.Expression) sql.Table {
+// // 	if len(filters) == 0 {
+// // 		return t
+// // 	}
 
-// 	nt := *t
-// 	// nt.filters = filters
-// 	return &nt
-// }
+// // 	nt := *t
+// // 	// nt.filters = filters
+// // 	return &nt
+// // }
 
-// // WithProjection implements the sql.ProjectedTable interface.
-// func (t *Table) WithProjection(colNames []string) sql.Table {
-// 	if len(colNames) == 0 {
-// 		return t
-// 	}
+// // // WithProjection implements the sql.ProjectedTable interface.
+// // func (t *Table) WithProjection(colNames []string) sql.Table {
+// // 	if len(colNames) == 0 {
+// // 		return t
+// // 	}
 
-// 	nt := *t
-// 	columns, schema, _ := nt.newColumnIndexesAndSchema(colNames)
-// 	nt.columns = columns
-// 	nt.projection = colNames
-// 	nt.schema = schema
+// // 	nt := *t
+// // 	columns, schema, _ := nt.newColumnIndexesAndSchema(colNames)
+// // 	nt.columns = columns
+// // 	nt.projection = colNames
+// // 	nt.schema = schema
 
-// 	return &nt
-// }
+// // 	return &nt
+// // }
 
-// func (t *Table) newColumnIndexesAndSchema(colNames []string) ([]int, sql.Schema, error) {
-// 	var columns []int
-// 	var schema []*sql.Column
+// // func (t *Table) newColumnIndexesAndSchema(colNames []string) ([]int, sql.Schema, error) {
+// // 	var columns []int
+// // 	var schema []*sql.Column
 
-// 	for _, name := range colNames {
-// 		i := t.schema.IndexOf(name, t.name)
-// 		if i == -1 {
-// 			return nil, nil, errColumnNotFound.New(name)
-// 		}
+// // 	for _, name := range colNames {
+// // 		i := t.schema.IndexOf(name, t.name)
+// // 		if i == -1 {
+// // 			return nil, nil, errColumnNotFound.New(name)
+// // 		}
 
-// 		if len(t.columns) == 0 {
-// 			// if the table hasn't been projected before
-// 			// match against the origianl schema
-// 			columns = append(columns, i)
-// 		} else {
-// 			// get indexes for the new projections from
-// 			// the orginal indexes.
-// 			columns = append(columns, t.columns[i])
-// 		}
+// // 		if len(t.columns) == 0 {
+// // 			// if the table hasn't been projected before
+// // 			// match against the origianl schema
+// // 			columns = append(columns, i)
+// // 		} else {
+// // 			// get indexes for the new projections from
+// // 			// the orginal indexes.
+// // 			columns = append(columns, t.columns[i])
+// // 		}
 
-// 		schema = append(schema, t.schema[i])
-// 	}
+// // 		schema = append(schema, t.schema[i])
+// // 	}
 
-// 	return columns, schema, nil
-// }
+// // 	return columns, schema, nil
+// // }
 
 // // // WithIndexLookup implements the sql.IndexableTable interface.
 // // func (t *Table) WithIndexLookup(lookup sql.IndexLookup) sql.Table {
@@ -485,10 +401,10 @@ package memory
 // // 	}, nil
 // // }
 
-// // Projection implements the sql.ProjectedTable interface.
-// func (t *Table) Projection() []string {
-// 	return t.projection
-// }
+// // // Projection implements the sql.ProjectedTable interface.
+// // func (t *Table) Projection() []string {
+// // 	return t.projection
+// // }
 
 // // // Filters implements the sql.FilteredTable interface.
 // // func (t *Table) Filters() []sql.Expression {
@@ -500,12 +416,12 @@ package memory
 // // 	return t.lookup
 // // }
 
-// type partitionIndexKeyValueIter struct {
-// 	table   *Table
-// 	iter    sql.PartitionIter
-// 	columns []int
-// 	ctx     *sql.Context
-// }
+// // type partitionIndexKeyValueIter struct {
+// // 	table   *Table
+// // 	iter    sql.PartitionIter
+// // 	columns []int
+// // 	ctx     *sql.Context
+// // }
 
 // // func (i *partitionIndexKeyValueIter) Next() (sql.Partition, sql.IndexKeyValueIter, error) {
 // // 	p, err := i.iter.Next()

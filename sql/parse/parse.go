@@ -20,7 +20,8 @@ func Parse(ctx *sql.Context, query string) (sql.Node, error) {
 
 	if s == "" {
 		ctx.Warn(0, "query was empty after trimming comments, so it will be ignored")
-		return plan.Nothing, nil
+		// return plan.Nothing, nil
+		panic("")
 	}
 
 	return plan.NewUnresolvedTable("mytable", "mydb"), nil

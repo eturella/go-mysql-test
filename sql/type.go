@@ -323,10 +323,10 @@ func (t nullT) Compare(a interface{}, b interface{}) (int, error) {
 	return 0, nil
 }
 
-// IsNull returns true if expression is nil or is Null Type, otherwise false.
-func IsNull(ex Expression) bool {
-	return ex == nil || ex.Type() == Null
-}
+// // IsNull returns true if expression is nil or is Null Type, otherwise false.
+// func IsNull(ex Expression) bool {
+// 	return ex == nil || ex.Type() == Null
+// }
 
 type numberT struct {
 	t query.Type
