@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	pkg "github.com/bisegni/go-c-interface-test/query"
 	"github.com/eturella/go-mysql-test/auth"
 	"github.com/eturella/go-mysql-test/bisegniadapter"
 	"github.com/eturella/go-mysql-test/sql"
@@ -144,15 +143,7 @@ func (e *Engine) Query(
 	// }
 
 	//analyzed, err = e.Analyzer.Analyze(ctx, parsed)
-	qe := pkg.NewFileExecutorWithRGA("test/tmp")
-
-	//execute query
-	err = qe.Execute()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	_, err = qe.Wait()
+	qe, err := bisegniadapter.CreateExecutor("test/test")
 	if err != nil {
 		return nil, nil, err
 	}
