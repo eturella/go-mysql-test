@@ -14,6 +14,22 @@ type ExternalTable struct {
 	executor pkg.Executor
 }
 
+// CreateExecutor crea l'esecutore e lo esegue.
+func CreateExecutor(path string) (pkg.Executor, error) {
+	qe := pkg.NewFileExecutorWithRGA(path)
+	//execute query
+	err := qe.Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = qe.Wait()
+	if err != nil {
+		return nil, err
+	}
+	return qe, nil
+}
+
 // NewExternalTable creates a new Table with the given name and schema.
 func NewExternalTable(name string, exec pkg.Executor) (*ExternalTable, error) {
 	return &ExternalTable{
