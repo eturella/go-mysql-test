@@ -11,30 +11,42 @@ import (
 // ExternalTable represents an in-memory database table.
 type ExternalTable struct {
 	name     string
-	executor pkg.Executor
+	executor *pkg.FileTableManagement
+	rs       *pkg.FileResultSet
 }
 
-// CreateExecutor crea l'esecutore e lo esegue.
-func CreateExecutor(path string) (pkg.Executor, error) {
-	qe := pkg.NewFileExecutorWithRGA(path)
-	//execute query
-	err := qe.Execute()
-	if err != nil {
-		return nil, err
-	}
+// // CreateExecutor crea l'esecutore e lo esegue.
+// func CreateExecutor(path string) (pkg.Executor, error) {
+// 	qe := pkg.NewFileExecutorWithRGA(path)
+// 	//execute query
+// 	err := qe.Execute()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	_, err = qe.Wait()
-	if err != nil {
-		return nil, err
-	}
-	return qe, nil
-}
+// 	_, err = qe.Wait()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return qe, nil
+// }
 
 // NewExternalTable creates a new Table with the given name and schema.
-func NewExternalTable(name string, exec pkg.Executor) (*ExternalTable, error) {
+func NewExternalTable(name string, exec *pkg.FileTableManagement) (*ExternalTable, error) {
+	ft, err := exec.OpenTable()
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := ft.SelectAll()
+	if err != nil {
+		return nil, err
+	}
+
 	return &ExternalTable{
 		name:     name,
 		executor: exec,
+		rs:       r,
 	}, nil
 }
 
@@ -45,7 +57,7 @@ func (t *ExternalTable) Name() string {
 
 // Schema implements the sql.Table interface.
 func (t *ExternalTable) Schema() sql.Schema {
-	tmo, err := t.executor.GetSchema()
+	tmo, err := t.rs.GetSchema()
 	if err != nil {
 		return nil
 	}
@@ -89,21 +101,19 @@ func (t *ExternalTable) Schema() sql.Schema {
 // Next ?????
 func (t *ExternalTable) Next() (sql.Row, error) {
 
-	// if t.executor.Next() {
-	// 	s, e := t.executor.ScanEntireRow()
-	// 	if e != nil {
-	// 		return nil, e
-	// 	}
-	// 	return s, nil
-	// }
-	s, e := t.executor.NextRow()
-	if e != nil {
-		return nil, e
+	n, err := t.rs.HasNext()
+	if err != nil {
+		return nil, err
 	}
-	if len(*s) == 0 {
-		return nil, io.EOF
+
+	if n {
+		s, e := t.rs.Next()
+		if e != nil {
+			return nil, e
+		}
+		return *s, nil
 	}
-	return *s, nil
+	return nil, io.EOF
 }
 
 // Close ????

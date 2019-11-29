@@ -1,11 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"reflect"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/eturella/go-mysql-test/auth"
 	"github.com/eturella/go-mysql-test/engine"
 	"github.com/eturella/go-mysql-test/server"
+
+	pkg "github.com/bisegni/go-c-interface-test/query"
 )
 
 var serverInstance server.Server
@@ -32,6 +38,9 @@ func main() {
 	// logrus.Debug("Creazione CATALOG...")
 	// engine.AddDatabase(sql.NewInformationSchemaDatabase(engine.Catalog))
 
+	r := createTest()
+	engine.FTM = r
+
 	logrus.Debug("Definizione del server...")
 	config := server.Config{
 		Protocol: "tcp",
@@ -49,6 +58,60 @@ func main() {
 
 func stop() {
 	serverInstance.Close()
+}
+
+func createTest() *pkg.FileTableManagement {
+	os.RemoveAll("test")
+
+	r := pkg.NewFileTableManagement("test", "data")
+
+	schema := []pkg.ColDescription{
+		pkg.ColDescription{
+			Name: "id",
+			Kind: reflect.Int32},
+		pkg.ColDescription{
+			Name: "val",
+			Kind: reflect.Int32},
+	}
+	err := r.Create(&schema)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	ft, err := r.OpenTable()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	row := make([]interface{}, 2)
+	var k, v int32
+
+	k, v = 1, 1234567
+	row[0], row[1] = k, v
+	err = ft.InsertRow(&row)
+	if err != nil {
+		fmt.Println(err)
+	}
+	k, v = 2, 2345678
+	row[0], row[1] = k, v
+	err = ft.InsertRow(&row)
+	if err != nil {
+		fmt.Println(err)
+	}
+	k, v = 3, 3456789
+	row[0], row[1] = k, v
+	err = ft.InsertRow(&row)
+	if err != nil {
+		fmt.Println(err)
+	}
+	k, v = 4, 4567890
+	row[0], row[1] = k, v
+	err = ft.InsertRow(&row)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return r
 }
 
 // func createTestDatabase() *memory.Database {

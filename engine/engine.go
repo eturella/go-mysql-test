@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bisegni/go-c-interface-test/query"
+
 	"github.com/eturella/go-mysql-test/auth"
 	"github.com/eturella/go-mysql-test/bisegniadapter"
 	"github.com/eturella/go-mysql-test/sql"
@@ -26,6 +28,8 @@ type Engine struct {
 	Catalog  *sql.Catalog
 	Analyzer *analyzer.Analyzer
 	Auth     auth.Auth
+
+	FTM *query.FileTableManagement
 }
 
 var (
@@ -83,7 +87,7 @@ func New(c *sql.Catalog, a *analyzer.Analyzer, cfg *Config) *Engine {
 		au = cfg.Auth
 	}
 
-	return &Engine{c, a, au}
+	return &Engine{c, a, au, nil}
 }
 
 // NewDefault creates a new default Engine.
@@ -143,12 +147,29 @@ func (e *Engine) Query(
 	// }
 
 	//analyzed, err = e.Analyzer.Analyze(ctx, parsed)
-	qe, err := bisegniadapter.CreateExecutor("test/test")
-	if err != nil {
-		return nil, nil, err
-	}
 
-	analyzed, err = bisegniadapter.NewExternalTable(query, qe)
+	// // PRIMA VERSIONE CON EXECUTOR inzio ----------------------------
+	// qe, err := bisegniadapter.CreateExecutor("test/test")
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
+
+	// analyzed, err = bisegniadapter.NewExternalTable(query, qe)
+	// fmt.Printf("%+v\n", analyzed)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
+
+	// iter, err = analyzed.RowIter(ctx)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
+	// // PRIMA VERSIONE CON EXECUTOR fine ----------------------------
+
+	// SECONDA VERSIONE CON MANAGER inzio ----------------------------
+	ftm := e.FTM
+
+	analyzed, err = bisegniadapter.NewExternalTable(query, ftm)
 	fmt.Printf("%+v\n", analyzed)
 	if err != nil {
 		return nil, nil, err
@@ -158,6 +179,7 @@ func (e *Engine) Query(
 	if err != nil {
 		return nil, nil, err
 	}
+	// SECONDA VERSIONE CON MANAGER fine ----------------------------
 
 	return analyzed.Schema(), iter, nil
 }
