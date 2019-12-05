@@ -11,7 +11,7 @@ import (
 // ExternalTable represents an in-memory database table.
 type ExternalTable struct {
 	name     string
-	executor *pkg.FileTableManagement
+	executor *pkg.AbstractFileTable
 	rs       *pkg.FileResultSet
 }
 
@@ -32,7 +32,7 @@ type ExternalTable struct {
 // }
 
 // NewExternalTable creates a new Table with the given name and schema.
-func NewExternalTable(name string, exec *pkg.FileTableManagement) (*ExternalTable, error) {
+func NewExternalTable(name string, exec *pkg.AbstractFileTable) (*ExternalTable, error) {
 	ft, err := exec.OpenTable()
 	if err != nil {
 		return nil, err
