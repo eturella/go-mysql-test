@@ -10,9 +10,10 @@ import (
 
 // ExternalTable represents an in-memory database table.
 type ExternalTable struct {
-	name     string
-	executor *pkg.AbstractFileTable
-	rs       *pkg.FileResultSet
+	name  string
+	table *pkg.FileTable
+	ss    *pkg.SelectStatement
+	rs    pkg.ResultSet
 }
 
 // // CreateExecutor crea l'esecutore e lo esegue.
@@ -32,21 +33,12 @@ type ExternalTable struct {
 // }
 
 // NewExternalTable creates a new Table with the given name and schema.
-func NewExternalTable(name string, exec *pkg.AbstractFileTable) (*ExternalTable, error) {
-	ft, err := exec.OpenTable()
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := ft.SelectAll()
-	if err != nil {
-		return nil, err
-	}
+func NewExternalTable(name string, ft *pkg.FileTable) (*ExternalTable, error) {
 
 	return &ExternalTable{
-		name:     name,
-		executor: exec,
-		rs:       r,
+		name:  name,
+		table: ft,
+		rs:    nil,
 	}, nil
 }
 
@@ -57,7 +49,7 @@ func (t *ExternalTable) Name() string {
 
 // Schema implements the sql.Table interface.
 func (t *ExternalTable) Schema() sql.Schema {
-	tmo, err := t.rs.GetSchema()
+	tmo, err := t.table.GetSchema()
 	if err != nil {
 		return nil
 	}
@@ -100,6 +92,20 @@ func (t *ExternalTable) Schema() sql.Schema {
 
 // Next ?????
 func (t *ExternalTable) Next() (sql.Row, error) {
+	if t.ss == nil {
+		r, err := t.table.OpenSelectStatement()
+		if err != nil {
+			return nil, err
+		}
+		t.ss = r
+	}
+	if t.rs == nil {
+		r, err := t.ss.SelectAll()
+		if err != nil {
+			return nil, err
+		}
+		t.rs = r
+	}
 
 	n, err := t.rs.HasNext()
 	if err != nil {
@@ -109,15 +115,23 @@ func (t *ExternalTable) Next() (sql.Row, error) {
 	if n {
 		s, e := t.rs.Next()
 		if e != nil {
+			t.rs.Close()
 			return nil, e
 		}
 		return *s, nil
 	}
+
+	t.rs.Close()
 	return nil, io.EOF
 }
 
 // Close ????
-func (t *ExternalTable) Close() error { return nil }
+func (t *ExternalTable) Close() error {
+	if t.rs == nil {
+		return nil
+	}
+	return t.rs.Close()
+}
 
 // String ...
 func (t *ExternalTable) String() string { return t.name }
