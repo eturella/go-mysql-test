@@ -1,14 +1,14 @@
-package plan
+package bisegniadapter
 
 import (
 	"sort"
 
-	"github.com/src-d/go-mysql-server/sql"
+	"github.com/eturella/go-mysql-test/sql"
 )
 
 // ShowTables is a node that shows the database tables.
 type ShowTables struct {
-	db   sql.Database
+	db   string
 	Full bool
 }
 
@@ -22,32 +22,32 @@ var showTablesFullSchema = sql.Schema{
 }
 
 // NewShowTables creates a new show tables node given a database.
-func NewShowTables(database sql.Database, full bool) *ShowTables {
+func NewShowTables(database string, full bool) *ShowTables {
 	return &ShowTables{
 		db:   database,
 		Full: full,
 	}
 }
 
-var _ sql.Databaser = (*ShowTables)(nil)
+// var _ sql.Databaser = (*ShowTables)(nil)
 
 // Database implements the sql.Databaser interface.
-func (p *ShowTables) Database() sql.Database {
+func (p *ShowTables) Database() string {
 	return p.db
 }
 
 // WithDatabase implements the sql.Databaser interface.
-func (p *ShowTables) WithDatabase(db sql.Database) (sql.Node, error) {
+func (p *ShowTables) WithDatabase(db string) (sql.Node, error) {
 	nc := *p
 	nc.db = db
 	return &nc, nil
 }
 
-// Resolved implements the Resolvable interface.
-func (p *ShowTables) Resolved() bool {
-	_, ok := p.db.(sql.UnresolvedDatabase)
-	return !ok
-}
+// // Resolved implements the Resolvable interface.
+// func (p *ShowTables) Resolved() bool {
+// 	_, ok := p.db.(sql.UnresolvedDatabase)
+// 	return !ok
+// }
 
 // Children implements the Node interface.
 func (*ShowTables) Children() []sql.Node {
@@ -66,9 +66,10 @@ func (p *ShowTables) Schema() sql.Schema {
 // RowIter implements the Node interface.
 func (p *ShowTables) RowIter(ctx *sql.Context) (sql.RowIter, error) {
 	tableNames := []string{}
-	for key := range p.db.Tables() {
-		tableNames = append(tableNames, key)
-	}
+	tableNames = append(tableNames, "table1")
+	tableNames = append(tableNames, "table2")
+	tableNames = append(tableNames, "table3")
+	tableNames = append(tableNames, "table4")
 
 	sort.Strings(tableNames)
 

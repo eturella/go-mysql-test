@@ -1,125 +1,119 @@
-package plan
+package bisegniadapter
 
-import (
-	"fmt"
+// // ShowColumns shows the columns details of a table.
+// type ShowColumns struct {
+// 	UnaryNode
+// 	Full bool
+// }
 
-	"github.com/src-d/go-mysql-server/sql"
-)
+// const defaultCollation = "utf8_bin"
 
-// ShowColumns shows the columns details of a table.
-type ShowColumns struct {
-	UnaryNode
-	Full bool
-}
+// var (
+// 	showColumnsSchema = sql.Schema{
+// 		{Name: "Field", Type: sql.Text},
+// 		{Name: "Type", Type: sql.Text},
+// 		{Name: "Null", Type: sql.Text},
+// 		{Name: "Key", Type: sql.Text},
+// 		{Name: "Default", Type: sql.Text, Nullable: true},
+// 		{Name: "Extra", Type: sql.Text},
+// 	}
 
-const defaultCollation = "utf8_bin"
+// 	showColumnsFullSchema = sql.Schema{
+// 		{Name: "Field", Type: sql.Text},
+// 		{Name: "Type", Type: sql.Text},
+// 		{Name: "Collation", Type: sql.Text, Nullable: true},
+// 		{Name: "Null", Type: sql.Text},
+// 		{Name: "Key", Type: sql.Text},
+// 		{Name: "Default", Type: sql.Text, Nullable: true},
+// 		{Name: "Extra", Type: sql.Text},
+// 		{Name: "Privileges", Type: sql.Text},
+// 		{Name: "Comment", Type: sql.Text},
+// 	}
+// )
 
-var (
-	showColumnsSchema = sql.Schema{
-		{Name: "Field", Type: sql.Text},
-		{Name: "Type", Type: sql.Text},
-		{Name: "Null", Type: sql.Text},
-		{Name: "Key", Type: sql.Text},
-		{Name: "Default", Type: sql.Text, Nullable: true},
-		{Name: "Extra", Type: sql.Text},
-	}
+// // NewShowColumns creates a new ShowColumns node.
+// func NewShowColumns(full bool, child sql.Node) *ShowColumns {
+// 	return &ShowColumns{UnaryNode{Child: child}, full}
+// }
 
-	showColumnsFullSchema = sql.Schema{
-		{Name: "Field", Type: sql.Text},
-		{Name: "Type", Type: sql.Text},
-		{Name: "Collation", Type: sql.Text, Nullable: true},
-		{Name: "Null", Type: sql.Text},
-		{Name: "Key", Type: sql.Text},
-		{Name: "Default", Type: sql.Text, Nullable: true},
-		{Name: "Extra", Type: sql.Text},
-		{Name: "Privileges", Type: sql.Text},
-		{Name: "Comment", Type: sql.Text},
-	}
-)
+// var _ sql.Node = (*ShowColumns)(nil)
 
-// NewShowColumns creates a new ShowColumns node.
-func NewShowColumns(full bool, child sql.Node) *ShowColumns {
-	return &ShowColumns{UnaryNode{Child: child}, full}
-}
+// // Schema implements the sql.Node interface.
+// func (s *ShowColumns) Schema() sql.Schema {
+// 	if s.Full {
+// 		return showColumnsFullSchema
+// 	}
+// 	return showColumnsSchema
+// }
 
-var _ sql.Node = (*ShowColumns)(nil)
+// // RowIter creates a new ShowColumns node.
+// func (s *ShowColumns) RowIter(ctx *sql.Context) (sql.RowIter, error) {
+// 	span, _ := ctx.Span("plan.ShowColumns")
 
-// Schema implements the sql.Node interface.
-func (s *ShowColumns) Schema() sql.Schema {
-	if s.Full {
-		return showColumnsFullSchema
-	}
-	return showColumnsSchema
-}
+// 	schema := s.Child.Schema()
+// 	var rows = make([]sql.Row, len(schema))
+// 	for i, col := range schema {
+// 		var row sql.Row
+// 		var collation interface{}
+// 		if col.Type == sql.Text {
+// 			collation = defaultCollation
+// 		}
 
-// RowIter creates a new ShowColumns node.
-func (s *ShowColumns) RowIter(ctx *sql.Context) (sql.RowIter, error) {
-	span, _ := ctx.Span("plan.ShowColumns")
+// 		var null = "NO"
+// 		if col.Nullable {
+// 			null = "YES"
+// 		}
 
-	schema := s.Child.Schema()
-	var rows = make([]sql.Row, len(schema))
-	for i, col := range schema {
-		var row sql.Row
-		var collation interface{}
-		if col.Type == sql.Text {
-			collation = defaultCollation
-		}
+// 		var defaultVal string
+// 		if col.Default != nil {
+// 			defaultVal = fmt.Sprint(col.Default)
+// 		}
 
-		var null = "NO"
-		if col.Nullable {
-			null = "YES"
-		}
+// 		if s.Full {
+// 			row = sql.Row{
+// 				col.Name,
+// 				col.Type.String(),
+// 				collation,
+// 				null,
+// 				"", // Key
+// 				defaultVal,
+// 				"", // Extra
+// 				"", // Privileges
+// 				"", // Comment
+// 			}
+// 		} else {
+// 			row = sql.Row{
+// 				col.Name,
+// 				col.Type.String(),
+// 				null,
+// 				"", // Key
+// 				defaultVal,
+// 				"", // Extra
+// 			}
+// 		}
 
-		var defaultVal string
-		if col.Default != nil {
-			defaultVal = fmt.Sprint(col.Default)
-		}
+// 		rows[i] = row
+// 	}
 
-		if s.Full {
-			row = sql.Row{
-				col.Name,
-				col.Type.String(),
-				collation,
-				null,
-				"", // Key
-				defaultVal,
-				"", // Extra
-				"", // Privileges
-				"", // Comment
-			}
-		} else {
-			row = sql.Row{
-				col.Name,
-				col.Type.String(),
-				null,
-				"", // Key
-				defaultVal,
-				"", // Extra
-			}
-		}
+// 	return sql.NewSpanIter(span, sql.RowsToRowIter(rows...)), nil
+// }
 
-		rows[i] = row
-	}
+// // WithChildren implements the Node interface.
+// func (s *ShowColumns) WithChildren(children ...sql.Node) (sql.Node, error) {
+// 	if len(children) != 1 {
+// 		return nil, sql.ErrInvalidChildrenNumber.New(s, len(children), 1)
+// 	}
 
-	return sql.NewSpanIter(span, sql.RowsToRowIter(rows...)), nil
-}
+// 	return NewShowColumns(s.Full, children[0]), nil
+// }
 
-// WithChildren implements the Node interface.
-func (s *ShowColumns) WithChildren(children ...sql.Node) (sql.Node, error) {
-	if len(children) != 1 {
-		return nil, sql.ErrInvalidChildrenNumber.New(s, len(children), 1)
-	}
-
-	return NewShowColumns(s.Full, children[0]), nil
-}
-
-func (s *ShowColumns) String() string {
-	tp := sql.NewTreePrinter()
-	if s.Full {
-		_ = tp.WriteNode("ShowColumns(full)")
-	} else {
-		_ = tp.WriteNode("ShowColumns")
-	}
-	_ = tp.WriteChildren(s.Child.String())
-	return tp.String()
-}
+// func (s *ShowColumns) String() string {
+// 	tp := sql.NewTreePrinter()
+// 	if s.Full {
+// 		_ = tp.WriteNode("ShowColumns(full)")
+// 	} else {
+// 		_ = tp.WriteNode("ShowColumns")
+// 	}
+// 	_ = tp.WriteChildren(s.Child.String())
+// 	return tp.String()
+// }

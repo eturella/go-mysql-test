@@ -38,8 +38,7 @@ func main() {
 	// logrus.Debug("Creazione CATALOG...")
 	// engine.AddDatabase(sql.NewInformationSchemaDatabase(engine.Catalog))
 
-	r := createTest()
-	engine.FTM = r
+	createTest()
 
 	logrus.Debug("Definizione del server...")
 	config := server.Config{
@@ -60,10 +59,10 @@ func stop() {
 	serverInstance.Close()
 }
 
-func createTest() *pkg.FileTableManagement {
-	os.RemoveAll("test")
+func createTest() *pkg.FileTable {
+	os.RemoveAll("data")
 
-	r := pkg.NewFileTableManagement("test", "data")
+	r := pkg.NewFileTable("data", "test")
 
 	schema := []pkg.ColDescription{
 		pkg.ColDescription{
@@ -77,36 +76,36 @@ func createTest() *pkg.FileTableManagement {
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	ft, err := r.OpenTable()
+	gotSchema, err := r.GetSchema()
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Printf("%v\n", gotSchema)
 
 	row := make([]interface{}, 2)
 	var k, v int32
 
 	k, v = 1, 1234567
 	row[0], row[1] = k, v
-	err = ft.InsertRow(&row)
+	err = r.InsertRow(&row)
 	if err != nil {
 		fmt.Println(err)
 	}
 	k, v = 2, 2345678
 	row[0], row[1] = k, v
-	err = ft.InsertRow(&row)
+	err = r.InsertRow(&row)
 	if err != nil {
 		fmt.Println(err)
 	}
 	k, v = 3, 3456789
 	row[0], row[1] = k, v
-	err = ft.InsertRow(&row)
+	err = r.InsertRow(&row)
 	if err != nil {
 		fmt.Println(err)
 	}
 	k, v = 4, 4567890
 	row[0], row[1] = k, v
-	err = ft.InsertRow(&row)
+	err = r.InsertRow(&row)
 	if err != nil {
 		fmt.Println(err)
 	}

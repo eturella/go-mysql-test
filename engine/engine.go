@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bisegni/go-c-interface-test/query"
+	"github.com/eturella/go-mysql-test/sql/parse"
 
 	"github.com/eturella/go-mysql-test/auth"
-	"github.com/eturella/go-mysql-test/bisegniadapter"
 	"github.com/eturella/go-mysql-test/sql"
 	"github.com/eturella/go-mysql-test/sql/analyzer"
 	"github.com/go-kit/kit/metrics/discard"
@@ -29,7 +28,7 @@ type Engine struct {
 	Analyzer *analyzer.Analyzer
 	Auth     auth.Auth
 
-	FTM *query.FileTableManagement
+	//FTM *query.F
 }
 
 var (
@@ -87,7 +86,7 @@ func New(c *sql.Catalog, a *analyzer.Analyzer, cfg *Config) *Engine {
 		au = cfg.Auth
 	}
 
-	return &Engine{c, a, au, nil}
+	return &Engine{c, a, au}
 }
 
 // NewDefault creates a new default Engine.
@@ -167,9 +166,10 @@ func (e *Engine) Query(
 	// // PRIMA VERSIONE CON EXECUTOR fine ----------------------------
 
 	// SECONDA VERSIONE CON MANAGER inzio ----------------------------
-	ftm := e.FTM
+	// ftm := e.FTM
 
-	analyzed, err = bisegniadapter.NewExternalTable(query, ftm)
+	//analyzed, err = bisegniadapter.NewExternalTable(query, ftm)
+	analyzed, err = parse.Parse(ctx, query)
 	fmt.Printf("%+v\n", analyzed)
 	if err != nil {
 		return nil, nil, err
