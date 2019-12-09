@@ -43,10 +43,10 @@ func Parse(ctx *sql.Context, query string) (sql.Node, error) {
 	}
 	fmt.Printf("%+v \n", sqlRequest)
 	// fmt.Printf("%s \n", json.MarshalIndent(sqlRequest, "", "    "))
-	fmt.Println(" -------> 2 ")
+	// fmt.Println(" -------> 2 ")
 	switch sqlRequest.(type) {
 	case *rel.SqlShow:
-		fmt.Println(" -------> 3 ")
+		// fmt.Println(" -------> 3 ")
 		stmt := sqlRequest.(*rel.SqlShow)
 		fmt.Printf("%+v \n", *stmt)
 		showType := strings.ToLower(stmt.ShowType)
@@ -59,21 +59,23 @@ func Parse(ctx *sql.Context, query string) (sql.Node, error) {
 		case "tables":
 			// {Raw:SHOW full tables from qualcosa like 'utente@%' Db:qualcosa Full:true Scope:
 			// ShowType:tables From: Identity: Create:false CreateWhat: Where:<nil> Like:Table LIKE "utente@%"}
+			ftm := pkg.NewFileTable("information_schema", "tables")
+			return bisegniadapter.NewExternalTable("tables", ftm)
 		case "variables":
 			// {Raw:SHOW variables Db: Full:false Scope: ShowType:variables From: Identity: Create:false CreateWhat: Where:<nil> Like:<nil>}
 			config := ctx.Session.GetAll()
 			return bisegniadapter.NewShowVariables(config, ""), nil
 		}
 	case *rel.SqlSelect:
-		fmt.Println(" -------> 4 ")
+		// fmt.Println(" -------> 4 ")
 		if strings.HasSuffix(strings.ToLower(query), "select @@global.max_allowed_packet") {
-			// m := map[string]sql.TypedValue{
-			// 	"@@global.max_allowed_packet": {Typ: sql.Int32, Value: "16777216"},
-			// }
-			// r := bisegniadapter.NewSelectVariables(m, query)
-			// return r, nil
-			config := ctx.Session.GetAll()
-			return bisegniadapter.NewShowVariables(config, ""), nil
+			// m := ctx.Session.GetAll()
+			m := map[string]sql.TypedValue{
+				"@@global.max_allowed_packet": {Typ: sql.Int64, Value: "4194304"}, // 16777216
+			}
+			// r := bisegniadapter.NewShowVariables(m, query)
+			r := bisegniadapter.NewSelectVariables(m, query)
+			return r, nil
 		}
 	}
 

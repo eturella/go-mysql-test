@@ -42,8 +42,12 @@ func (sv *SelectVariables) String() string {
 // Schema returns a new Schema reference for "SHOW VARIABLES" query.
 func (sv *SelectVariables) Schema() sql.Schema {
 	s := sql.Schema{}
+
+	// fmt.Printf("%+v\n", sv.config)
 	for k, v := range sv.config {
-		s = append(s, &sql.Column{Name: k, Type: v.Typ, Nullable: true})
+		c := sql.Column{Name: k, Type: v.Typ, Nullable: true}
+		// fmt.Printf(" --> %+v\n", c)
+		s = append(s, &c)
 	}
 	return s
 }
@@ -58,19 +62,11 @@ func (sv *SelectVariables) RowIter(ctx *sql.Context) (sql.RowIter, error) {
 		rows []sql.Row
 	)
 
-	for k, v := range sv.config {
-		// if like != nil {
-		// 	b, err := like.Eval(ctx, sql.NewRow(k, sv.pattern))
-		// 	if err != nil {
-		// 		return nil, err
-		// 	}
-		// 	if !b.(bool) {
-		// 		continue
-		// 	}
-		// }
-
-		rows = append(rows, sql.NewRow(k, v.Value))
+	// fmt.Printf("%+v\n", sv.config)
+	for _, v := range sv.config {
+		rows = append(rows, sql.NewRow(v.Value))
 	}
+	// fmt.Printf(" --> %+v\n", rows)
 
 	return sql.RowsToRowIter(rows...), nil
 }

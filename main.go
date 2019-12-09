@@ -82,32 +82,63 @@ func createTest() *pkg.FileTable {
 	}
 	fmt.Printf("%v\n", gotSchema)
 
-	row := make([]interface{}, 2)
-	var k, v int32
+	{
+		row := make([]interface{}, 2)
+		var k, v int32
 
-	k, v = 1, 1234567
-	row[0], row[1] = k, v
-	err = r.InsertRow(&row)
+		k, v = 1, 1234567
+		row[0], row[1] = k, v
+		err = r.InsertRow(&row)
+		if err != nil {
+			fmt.Println(err)
+		}
+		k, v = 2, 2345678
+		row[0], row[1] = k, v
+		err = r.InsertRow(&row)
+		if err != nil {
+			fmt.Println(err)
+		}
+		k, v = 3, 3456789
+		row[0], row[1] = k, v
+		err = r.InsertRow(&row)
+		if err != nil {
+			fmt.Println(err)
+		}
+		k, v = 4, 4567890
+		row[0], row[1] = k, v
+		err = r.InsertRow(&row)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	r = pkg.NewFileTable("information_schema", "tables")
+	schema = []pkg.ColDescription{
+		pkg.ColDescription{
+			Name: "schema",
+			Kind: reflect.Int32},
+		pkg.ColDescription{
+			Name: "table",
+			Kind: reflect.Int32},
+	}
+	err = r.Create(&schema)
 	if err != nil {
 		fmt.Println(err)
 	}
-	k, v = 2, 2345678
-	row[0], row[1] = k, v
-	err = r.InsertRow(&row)
+	gotSchema, err = r.GetSchema()
 	if err != nil {
 		fmt.Println(err)
 	}
-	k, v = 3, 3456789
-	row[0], row[1] = k, v
-	err = r.InsertRow(&row)
-	if err != nil {
-		fmt.Println(err)
-	}
-	k, v = 4, 4567890
-	row[0], row[1] = k, v
-	err = r.InsertRow(&row)
-	if err != nil {
-		fmt.Println(err)
+	fmt.Printf("%v\n", gotSchema)
+
+	{
+		row := make([]interface{}, 2)
+
+		row[0], row[1] = "data", "test"
+		err = r.InsertRow(&row)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	return r

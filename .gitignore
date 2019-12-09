@@ -12,3 +12,5 @@
 *.out
 
 test
+information_schema/
+data
